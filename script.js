@@ -57,7 +57,7 @@
   const header = $('#siteHeader'), backToTop = $('#backToTop');
   const revealObserver = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }), {threshold:.12});
   $$('.reveal').forEach(el => revealObserver.observe(el));
-  const navSections = ['home','about','skills','journey','contact'].map(id=>document.getElementById(id)).filter(Boolean);
+  const navSections = ['home','about','projects','skills','journey','contact'].map(id=>document.getElementById(id)).filter(Boolean);
   const onScroll = () => {
     const y = scrollY;
     header?.classList.toggle('scrolled', y > 30);
@@ -121,6 +121,22 @@
   const showFeedback = i => { feedbackIndex=(i+cards.length)%cards.length; cards.forEach((c,n)=>c.classList.toggle('active',n===feedbackIndex)); };
   $('#feedbackPrev')?.addEventListener('click',()=>showFeedback(feedbackIndex-1)); $('#feedbackNext')?.addEventListener('click',()=>showFeedback(feedbackIndex+1));
 
+
+  // The design shows Download CV in the header and hero. Avoid broken downloads until an actual CV PDF is added.
+  document.querySelectorAll('[data-cv-link]').forEach(a => a.addEventListener('click', event => {
+    if (a.dataset.cvReady === 'true') return;
+    event.preventDefault();
+    let toast = document.getElementById('cvPendingToast');
+    if (!toast) {
+      toast = document.createElement('div'); toast.id='cvPendingToast'; toast.className='cv-pending-toast';toast.setAttribute('role','status');
+      toast.textContent='CV file is not uploaded yet. Please use the Contact section to request it.';
+      Object.assign(toast.style, {position:'fixed',bottom:'26px',left:'50%',transform:'translateX(-50%)',zIndex:'99999',background:'#0d2545',border:'1px solid #24c7ed',borderRadius:'12px',padding:'14px 20px',color:'#fff',fontSize:'14px',maxWidth:'min(90vw,510px)',textAlign:'center',boxShadow:'0 14px 35px rgba(0,0,0,.45)'});
+      document.body.appendChild(toast);
+    }
+    toast.hidden=false;
+    clearTimeout(window.__cvToastTimeout);window.__cvToastTimeout=setTimeout(()=>{toast.hidden=true},4200);
+  }));
+
   // Contact to WhatsApp.
   const form = $('#contactForm');
   form?.addEventListener('submit', e => {
@@ -141,7 +157,7 @@
     if(/stud(y|ying)|iot|current|now/.test(s)) return 'Musaddiq is currently an IoT Engineering Student, expanding his software background into sensors, connected devices, automation and physical-digital systems.';
     if(/x10|co.?founder|company|role/.test(s)) return 'Musaddiq is a Co-Founder of X10 THINK, where he contributes to software development, solution planning, branding and digital product execution.';
     if(/skill|technolog|stack|use/.test(s)) return 'His practical stack includes C#, ASP.NET Core, REST APIs, SQL Server, Entity Framework Core, Dapper, Angular, JavaScript, HTML/CSS, Java, Git/GitHub and growing IoT engineering skills.';
-    if(/project|work|build/.test(s)) return 'Selected projects include the DevSphere/AptLens Smart Recruitment Matching Platform, a role-based Task Management System, TaskFlow productivity dashboard, Digital Horizon e-learning system and other API/database projects.';
+    if(/project|work|build/.test(s)) return 'The four selected projects are DevSphere Smart Recruitment, Advance TaskFlow, Wave Audio Sharing and Translation (in development), and NexHire Smart Recruitment. Each project card links to its GitHub repository.';
     if(/contact|whatsapp|phone|hire|talk/.test(s)) return 'You can contact Musaddiq on WhatsApp at +94 71 465 9380 or email mhd.musaddiq2007@gmail.com. The project form on this page can prepare a WhatsApp enquiry.';
     if(/service/.test(s)) return 'Services include IoT solution planning, full-stack web development, REST APIs, SQL Server/database design, dashboards and software solution planning.';
     if(/education|study|inara/.test(s)) return 'Musaddiq is pursuing software engineering studies and is now also studying IoT Engineering. His background includes an HND path in Software Engineering, A/L subjects in ICT, Accounting and Business Studies, and practical software engineering training at Unicom TIC.';
