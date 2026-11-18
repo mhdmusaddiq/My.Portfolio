@@ -1,1 +1,17 @@
-const CACHE='musaddiq-portfolio-v1';const ASSETS=['./','./index.html','./style.css','./script.js','./favicon.svg','./assets/musaddiq-profile.webp'];self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{const copy=res.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return res}).catch(()=>caches.match('./index.html'))))});
+/* Portfolio service worker — retire the old cache-first version.
+   The portfolio is served online-first; legacy site caches are removed. */
+self.addEventListener('install', event => {
+  event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys
+      .filter(key => key.startsWith('musaddiq-portfolio-'))
+      .map(key => caches.delete(key)));
+    await self.clients.claim();
+  })());
+});
+
+// No fetch handler: use the current deployed files from the network.
